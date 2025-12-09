@@ -1,6 +1,6 @@
 {
   "name": "windy-plugin-convective-tracker",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "icon": "⚡",
   "title": "Convective Formation Tracker",
   "description": "Tracker para monitorar e prever deslocamento de formações convectivas",
