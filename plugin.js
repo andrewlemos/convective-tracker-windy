@@ -1,6 +1,6 @@
 const __pluginConfig =  {
   "name": "windy-plugin-convective-tracker",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "icon": "⚡",
   "title": "Convective Formation Tracker",
   "description": "Tracker para monitorar e prever deslocamento de formações convectivas",
