@@ -1,0 +1,84 @@
+name: Publish Plugin to Windy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Permite execução manual
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Publish to Windy
+        run: |
+          cd dist
+          
+          # Cria arquivo plugin-info.json
+          echo '{
+            "repositoryName": "${{ github.repository }}",
+            "commitSha": "${{ github.sha }}",
+            "repositoryOwner": "${{ github.repository_owner }}"
+          }' > plugin-info.json
+          
+          # Verifica se plugin.json existe
+          if [ -f plugin.json ]; then
+            # Se tiver jq instalado
+            if command -v jq &> /dev/null; then
+              jq -s '.[0] * .[1]' plugin.json plugin-info.json > plugin2.json
+              mv plugin2.json plugin.json
+            else
+              # Alternativa sem jq usando Node.js
+              node -e "
+              const fs = require('fs');
+              const plugin = JSON.parse(fs.readFileSync('plugin.json'));
+              const info = JSON.parse(fs.readFileSync('plugin-info.json'));
+              fs.writeFileSync('plugin.json', JSON.stringify({...plugin, ...info}, null, 2));
+              "
+            fi
+          else
+            mv plugin-info.json plugin.json
+          fi
+          
+          # Cria arquivo tar
+          tar cf plugin.tar --exclude='./plugin.tar' .
+          
+          # Envia para Windy
+          echo "Enviando plugin para Windy..."
+          response=$(curl -s -w "\n%{http_code}" -XPOST 'https://node.windy.com/plugins/v1.0/upload' \
+            -H "x-windy-api-key: ${{ secrets.WINDY_API_KEY }}" \
+            -F "plugin_archive=@./plugin.tar")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n -1)
+          
+          echo "HTTP Code: $http_code"
+          echo "Response: $body"
+          
+          # Extrai URL da resposta se bem-sucedido
+          if [ "$http_code" = "200" ]; then
+            url=$(echo "$body" | grep -o 'https://windy-plugins.com/[^"]*')
+            echo "✅ Plugin publicado com sucesso!"
+            echo "🔗 Plugin installation URL: $url"
+            echo "::set-output name=plugin_url::$url"
+          else
+            echo "❌ Erro ao publicar plugin"
+            exit 1
+          fi
+          
+          rm plugin.tar
