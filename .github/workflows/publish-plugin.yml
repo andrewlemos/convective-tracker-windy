@@ -1,0 +1,103 @@
+name: Publish Plugin to Windy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Prepare plugin from root files
+        run: |
+          echo "=== Arquivos na raiz ==="
+          ls -la
+          
+          # Cria uma pasta temporária com os arquivos do plugin
+          mkdir -p plugin-files
+          
+          # Copia APENAS os arquivos essenciais do plugin
+          cp plugin.json plugin-files/ 2>/dev/null || echo "⚠️  plugin.json não encontrado"
+          cp plugin.min.js plugin-files/ 2>/dev/null || echo "⚠️  plugin.min.js não encontrado"
+          cp plugin.js plugin-files/ 2>/dev/null || echo "⚠️  plugin.js não encontrado"
+          cp bundle.css plugin-files/ 2>/dev/null || echo "⚠️  bundle.css não encontrado"
+          
+          # Entra na pasta com os arquivos
+          cd plugin-files
+          
+          echo "=== Arquivos do plugin ==="
+          ls -la
+
+      - name: Publish to Windy
+        run: |
+          cd plugin-files
+          
+          # Verifica se tem os arquivos mínimos
+          if [ ! -f plugin.json ]; then
+            echo "❌ ERRO CRÍTICO: plugin.json não encontrado!"
+            exit 1
+          fi
+          
+          echo "=== plugin.json original ==="
+          cat plugin.json
+          
+          # Adiciona informações do GitHub
+          cat > plugin-info.json << EOF
+          {
+            "repositoryName": "${{ github.repository }}",
+            "commitSha": "${{ github.sha }}",
+            "repositoryOwner": "${{ github.repository_owner }}"
+          }
+          EOF
+          
+          # Combina JSONs
+          node -e "
+          const fs = require('fs');
+          const plugin = JSON.parse(fs.readFileSync('plugin.json'));
+          const info = JSON.parse(fs.readFileSync('plugin-info.json'));
+          fs.writeFileSync('plugin.json', JSON.stringify({...plugin, ...info}, null, 2));
+          console.log('✅ JSONs combinados');
+          "
+          
+          echo "=== plugin.json final ==="
+          cat plugin.json
+          
+          # Cria tar
+          tar cf plugin.tar --exclude='./plugin.tar' .
+          
+          # Publica
+          echo "📤 Enviando para Windy..."
+          response=$(curl -s -w "\n%{http_code}" -XPOST 'https://node.windy.com/plugins/v1.0/upload' \
+            -H "x-windy-api-key: ${{ secrets.WINDY_API_KEY }}" \
+            -F "plugin_archive=@./plugin.tar")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n -1)
+          
+          echo "📥 Resposta: HTTP $http_code"
+          
+          if [ "$http_code" = "200" ]; then
+            url=$(echo "$body" | grep -o 'https://windy-plugins.com/[^"]*')
+            echo ""
+            echo "🎉 🎉 🎉 PLUGIN PUBLICADO COM SUCESSO! 🎉 🎉 🎉"
+            echo ""
+            echo "🔗 URL DO SEU PLUGIN:"
+            echo "$url"
+            echo ""
+            echo "📝 PARA USAR NO WINDY:"
+            echo "1. Acesse https://www.windy.com"
+            echo "2. Clique em 'Plugins' no menu"
+            echo "3. Clique em 'Adicionar Plugin'"
+            echo "4. Cole esta URL:"
+            echo "$url"
+            echo "5. Clique em 'Adicionar'"
+            echo ""
+            # Salva a URL como output
+            echo "plugin_url=$url" >> $GITHUB_OUTPUT
+          else
+            echo "❌ ERRO NA PUBLICAÇÃO"
+            echo "Detalhes: $body"
+            exit 1
+          fi

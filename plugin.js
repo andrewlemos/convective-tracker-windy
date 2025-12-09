@@ -1,10 +1,11 @@
 const __pluginConfig =  {
   "name": "windy-plugin-convective-tracker",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "icon": "⚡",
   "title": "Convective Formation Tracker",
   "description": "Tracker para monitorar e prever deslocamento de formações convectivas",
   "author": "Andrew Lemos",
+  "private": false,
   "desktopUI": "rhpane",
   "mobileUI": "fullscreen",
   "desktopWidth": 450,
@@ -2071,30 +2072,44 @@ function calculateDistanceKm(point1, point2) {
 function calculateVelocity(point1, point2) {
 	const distanceM = calculateDistanceMeters(point1, point2);
 	const timeDiffS = (point2.time - point1.time) / 1000;
-	if (timeDiffS <= 0) return 0;
-	return distanceM / timeDiffS;
+	
+	if (timeDiffS <= 0) {
+		console.log(`⚠️  Tempo inválido para cálculo de velocidade: ${timeDiffS}s`);
+		return 0;
+	}
+	
+	const velocity = distanceM / timeDiffS;
+	const absoluteVelocity = Math.abs(velocity);
+	
+	console.log(`📊 Cálculo de velocidade:`);
+	console.log(`   Distância: ${distanceM.toFixed(0)} m`);
+	console.log(`   Tempo: ${timeDiffS.toFixed(1)} s`);
+	console.log(`   Velocidade: ${velocity.toFixed(2)} m/s`);
+	console.log(`   Velocidade (absoluta): ${absoluteVelocity.toFixed(2)} m/s`);
+	
+	return absoluteVelocity; // SEMPRE retornar valor positivo
 }
 
 function calculateAcceleration(points) {
 	if (points.length < 3) return { acceleration: 0, hasSignificant: false };
 	const lastPoints = points.slice(-3);
-	const v1 = calculateVelocity(lastPoints[0], lastPoints[1]);
-	const v2 = calculateVelocity(lastPoints[1], lastPoints[2]);
+	const v1 = Math.abs(calculateVelocity(lastPoints[0], lastPoints[1])); // CORREÇÃO: usar velocidade positiva
+	const v2 = Math.abs(calculateVelocity(lastPoints[1], lastPoints[2])); // CORREÇÃO: usar velocidade positiva
 	const Δt1 = (lastPoints[1].time - lastPoints[0].time) / 1000;
 	const Δt2 = (lastPoints[2].time - lastPoints[1].time) / 1000;
 	if (Δt1 <= 0 || Δt2 <= 0) return { acceleration: 0, hasSignificant: false };
 	const Δt = Δt2;
-	const acceleration = (v2 - v1) / Δt;
-	const velocityChangePercent = Math.abs((v2 - v1) / v1) * 100;
+	const acceleration = Math.abs(v2 - v1) / Δt; // CORREÇÃO 2: Aceleração também em módulo
+	const velocityChangePercent = Math.abs((v2 - v1) / Math.max(v1, 0.001)) * 100;
 	const isSignificantByPercent = velocityChangePercent > 10;
 	const isSignificantByAbsolute = Math.abs(acceleration) > SIGNIFICANT_ACCELERATION;
 	const hasSignificant = isSignificantByAbsolute || isSignificantByPercent;
 	console.log(`📊 ACELERAÇÃO DETALHADA:`);
 	console.log(`   v1 = ${v1.toFixed(2)} m/s (${(v1 * 3.6).toFixed(1)} km/h)`);
 	console.log(`   v2 = ${v2.toFixed(2)} m/s (${(v2 * 3.6).toFixed(1)} km/h)`);
-	console.log(`   Δv = ${(v2 - v1).toFixed(2)} m/s`);
+	console.log(`   Δv = ${Math.abs(v2 - v1).toFixed(2)} m/s`);
 	console.log(`   Δt = ${Δt.toFixed(0)} s`);
-	console.log(`   a = (v2 - v1) / Δt = ${(v2 - v1).toFixed(2)} / ${Δt.toFixed(0)}`);
+	console.log(`   a = |v2 - v1| / Δt = ${Math.abs(v2 - v1).toFixed(2)} / ${Δt.toFixed(0)}`);
 	console.log(`   a = ${acceleration.toFixed(4)} m/s²`);
 	console.log(`   Mudança percentual: ${velocityChangePercent.toFixed(1)}%`);
 	console.log(`   Limite absoluto: ${SIGNIFICANT_ACCELERATION} m/s²`);
@@ -2217,17 +2232,71 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	function resetTracking() {
-		$$invalidate(1, trackingMode = false);
-
-		if (points.length >= 2) {
-			calculateTrajectory();
-		}
-
-		if (projectedPosition) {
-			clearProjection();
+	console.log('🔄 REINICIANDO TRACKING COMPLETAMENTE...');
+	
+	// 1. Limpar pontos do estado
+	$$invalidate(0, points = []);
+	
+	// 2. Desativar modo tracking
+	$$invalidate(1, trackingMode = false);
+	
+	// 3. Limpar cálculos
+	$$invalidate(2, lastCalculation = null);
+	$$invalidate(4, projectedPosition = null);
+	
+	// 4. Remover todos os marcadores do mapa
+	const mapObj = getMap();
+	if (mapObj) {
+		console.log('🗺️  Removendo marcadores do mapa...');
+		
+		// Remover marcadores de pontos
+		leafletMarkers.forEach(marker => {
+			try {
+				if (marker && mapObj.hasLayer(marker)) {
+					mapObj.removeLayer(marker);
+				}
+			} catch (e) {
+				console.warn('⚠️  Erro ao remover marcador:', e);
+			}
+		});
+		
+		// Remover linhas de trajetória
+		leafletLines.forEach(line => {
+			try {
+				if (line && mapObj.hasLayer(line)) {
+					mapObj.removeLayer(line);
+				}
+			} catch (e) {
+				console.warn('⚠️  Erro ao remover linha:', e);
+			}
+		});
+		
+		// Remover linha de projeção
+		if (projectionLine && mapObj.hasLayer(projectionLine)) {
+			try {
+				mapObj.removeLayer(projectionLine);
+				projectionLine = null;
+			} catch (e) {
+				console.warn('⚠️  Erro ao remover linha de projeção:', e);
+			}
 		}
 	}
-
+	
+	// 5. Limpar arrays internos
+	leafletMarkers = [];
+	leafletLines = [];
+	
+	// 6. Resetar tempo manual para agora
+	const now = new Date();
+	$$invalidate(7, manualHours = now.getHours());
+	$$invalidate(8, manualMinutes = now.getMinutes());
+	
+	console.log('✅ TRACKING REINICIADO COM SUCESSO!');
+	console.log('   - Pontos: 0');
+	console.log('   - Tracking: INATIVO');
+	console.log('   - Marcadores: removidos');
+	console.log('   - Cálculos: resetados');
+}
 	function addWindyMarker(lat, lon, pointNumber, timestamp) {
 		try {
 			const marker = L.marker([lat, lon], {
@@ -2278,7 +2347,7 @@ function instance($$self, $$props, $$invalidate) {
 				newPoint.timeFromPrev = currentTimestamp - lastPoint.time;
 
 				if (newPoint.timeFromPrev > 0) {
-					newPoint.velocity = calculateVelocity(lastPoint, newPoint);
+					newPoint.velocity = Math.abs(calculateVelocity(lastPoint, newPoint)); // CORREÇÃO: velocidade positiva
 					newPoint.direction = calculateDirection(lastPoint, newPoint);
 					console.log(`📊 Δ Tempo: ${(newPoint.timeFromPrev / 1000 / 60).toFixed(1)} min`);
 					console.log(`📊 Velocidade: ${newPoint.velocity?.toFixed(1)} m/s (${(newPoint.velocity * 3.6).toFixed(1)} km/h)`);
@@ -2339,7 +2408,7 @@ function instance($$self, $$props, $$invalidate) {
 		let lastSegmentTime = 0;
 
 		for (let i = 0; i < points.length - 1; i++) {
-			const velocity = calculateVelocity(points[i], points[i + 1]);
+			const velocity = Math.abs(calculateVelocity(points[i], points[i + 1])); // CORREÇÃO: velocidade positiva
 			velocities.push(velocity);
 			directions.push(calculateDirection(points[i], points[i + 1]));
 			totalDistanceM += calculateDistanceMeters(points[i], points[i + 1]);
@@ -2393,6 +2462,7 @@ function instance($$self, $$props, $$invalidate) {
 
 		if (hasSignificant && !shouldUseUniformMotion && lastSegmentTime > 0) {
 			estimatedInstantVelocity = currentVelocity + acceleration * lastSegmentTime;
+			estimatedInstantVelocity = Math.abs(estimatedInstantVelocity); // CORREÇÃO: garantir positivo
 			console.log(`📊 VELOCIDADE INSTANTÂNEA COM ACELERAÇÃO:`);
 			console.log(`   v0 = ${currentVelocity.toFixed(2)} m/s`);
 			console.log(`   a = ${acceleration.toFixed(4)} m/s²`);
@@ -2436,17 +2506,25 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	function projectTrajectory() {
-		if (!lastCalculation || points.length < 2) {
-			console.log('Não há cálculo disponível para projetar');
-			return;
-		}
-
-		try {
-			const lastPoint = points[points.length - 1];
-			const timeInSeconds = projectionTime * 60;
-			let projectedDistanceM;
-			let finalVelocityMps;
-			let useAcceleration = false;
+		if (lastCalculation.useUniformMotion && !forceUseAcceleration) {
+			projectedDistanceM = lastCalculation.currentVelocity * timeInSeconds;
+			finalVelocityMps = Math.max(0, lastCalculation.currentVelocity); // GARANTIR POSITIVO
+			useAcceleration = false;
+			console.log('\n📏 PROJEÇÃO MRU (Movimento Uniforme):');
+			console.log(`   Fórmula: s = v * t`);
+			console.log(`   v = ${lastCalculation.currentVelocity.toFixed(2)} m/s`);
+			console.log(`   t = ${timeInSeconds} s`);
+			console.log(`   s = ${lastCalculation.currentVelocity.toFixed(2)} * ${timeInSeconds}`);
+			console.log(`   s = ${projectedDistanceM.toFixed(0)} m`);
+		} else {
+			const v0 = Math.max(0, lastCalculation.currentVelocity); // GARANTIR POSITIVO
+			const a = Math.abs(lastCalculation.acceleration); // GARANTIR POSITIVO
+			const part1 = v0 * timeInSeconds;
+			const part2 = 0.5 * a * timeInSeconds * timeInSeconds;
+			projectedDistanceM = part1 + part2;
+			finalVelocityMps = v0 + a * timeInSeconds;
+			finalVelocityMps = Math.max(0, finalVelocityMps); // GARANTIR POSITIVO
+			useAcceleration = true;
 			console.log(('=').repeat(60));
 			console.log('🚀 INICIANDO PROJEÇÃO DE TRAJETÓRIA');
 			console.log(('=').repeat(60));
@@ -2480,11 +2558,12 @@ function instance($$self, $$props, $$invalidate) {
 				console.log(`   s = ${projectedDistanceM.toFixed(0)} m`);
 			} else {
 				const v0 = lastCalculation.currentVelocity;
-				const a = lastCalculation.acceleration;
+				const a = Math.abs(lastCalculation.acceleration); // CORREÇÃO: aceleração em módulo
 				const part1 = v0 * timeInSeconds;
 				const part2 = 0.5 * a * timeInSeconds * timeInSeconds;
 				projectedDistanceM = part1 + part2;
 				finalVelocityMps = v0 + a * timeInSeconds;
+				finalVelocityMps = Math.abs(finalVelocityMps); // CORREÇÃO 4: Velocidade final em módulo
 				useAcceleration = true;
 				console.log('\n📏 PROJEÇÃO MRUV (Movimento Uniformemente Variado):');
 				console.log(`   Fórmula: s = v0*t + 0.5*a*t²`);
@@ -2497,7 +2576,7 @@ function instance($$self, $$props, $$invalidate) {
 				console.log(`\n📏 Velocidade final (v = v0 + a*t):`);
 				console.log(`   v = ${v0.toFixed(2)} + ${a.toFixed(4)} * ${timeInSeconds}`);
 				console.log(`   v = ${v0.toFixed(2)} + ${(a * timeInSeconds).toFixed(2)}`);
-				console.log(`   v = ${finalVelocityMps.toFixed(2)} m/s`);
+				console.log(`   v = ${finalVelocityMps.toFixed(2)} m/s (sempre positiva)`);
 			}
 
 			const MAX_DISTANCE_M = 10000 * 1000;
@@ -2661,8 +2740,9 @@ function instance($$self, $$props, $$invalidate) {
 		console.log('⚙️ CONFIGURAÇÃO DO SISTEMA:');
 		console.log('   - Sensibilidade da aceleração:', SIGNIFICANT_ACCELERATION, 'm/s²');
 		console.log('   - Detecta aceleração por valor absoluto OU mudança percentual > 10%');
-		console.log('   - MRU padrão: DESATIVADO (teste MRUV primeiro)');
-		console.log('   - Botão "Limpar Projeção": SEMPRE ATIVO');
+		console.log('   - Velocidade: SEMPRE em módulo (nunca negativa)');
+		console.log('   - Aceleração: SEMPRE em módulo (nunca negativa)');
+		console.log('   - Botão "Reiniciar Tracking": Agora limpa pontos corretamente');
 		setCurrentTime();
 
 		if (singleclick && typeof singleclick.on === 'function') {
@@ -2681,9 +2761,9 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		console.log('\n📝 INSTRUÇÕES PARA TESTE:');
-		console.log('   1. Desmarque "Usar movimento uniforme" para testar MRUV');
+		console.log('   1. Use "Reiniciar Tracking" para começar do zero');
 		console.log('   2. Marque 3+ pontos com intervalos regulares');
-		console.log('   3. Veja no console se aceleração é detectada como SIGNIFICANTE');
+		console.log('   3. Velocidade e aceleração sempre serão positivas');
 		console.log('   4. Projete trajetória e compare MRU vs MRUV');
 		console.log('   5. Use "Limpar Projeção" a qualquer momento');
 		console.log('   6. Use "Limpar Tudo" para reiniciar completamente');
