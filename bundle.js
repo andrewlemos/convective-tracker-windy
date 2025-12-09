@@ -4801,11 +4801,11 @@ var Plugin = (function (exports, singleclick, map) {
 
 	var config = {
 	    name: "convective-tracker",
-	    version: "1.0.0",
+	    version: "1.0.4",
 	    description: "Convective Tracker",
 	    author: "Andrew Lemos",
 	    windyPlugin: {
-	        version: "1.0.0",
+	        version: "1.0.4",
 	        left: 400,
 	        top: 100,
 	        width: 400,
@@ -4864,30 +4864,59 @@ var Plugin = (function (exports, singleclick, map) {
 
 		let manualMinutes = mutable_source(0);
 
+		let manualDate = mutable_source(new Date().toISOString().split('T')[0]); 
+
 		// Função para definir hora atual
 		function setCurrentTime() {
 			const now = new Date();
 
 			set(manualHours, now.getHours());
 			set(manualMinutes, now.getMinutes());
+			set(manualDate, now.toISOString().split('T')[0]);
 		}
 
-		// Obter timestamp - SIMPLIFICADO
+		// Obter timestamp 
 		function getManualTimestamp() {
 			try {
 				let hours = get(manualHours);
 				let minutes = get(manualMinutes);
-
+				const dateStr = get(manualDate); // Obter data do usuário
+		
 				if (isNaN(hours) || hours < 0 || hours > 23) hours = 14;
 				if (isNaN(minutes) || minutes < 0 || minutes > 59) minutes = 0;
-
-				const now = new Date();
-				const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
-
-				return date.getTime();
+		
+				// Se já temos pontos, verificar mudança de dia
+				const currentPoints = get(points);
+				if (currentPoints.length > 0) {
+					const lastPointTime = currentPoints[currentPoints.length - 1].time;
+					const lastDate = new Date(lastPointTime);
+					
+					// Se a hora manual for MENOR que a hora do último ponto,
+					// provavelmente mudou de dia
+					if (hours < lastDate.getHours() || 
+					   (hours === lastDate.getHours() && minutes < lastDate.getMinutes())) {
+						// Usar o dia seguinte ao último ponto
+						lastDate.setDate(lastDate.getDate() + 1);
+						lastDate.setHours(hours, minutes, 0, 0);
+						console.log('📅 Mudança de dia detectada, usando dia seguinte');
+						return lastDate.getTime();
+					}
+					
+					// Mesmo dia, apenas ajustar hora
+					lastDate.setHours(hours, minutes, 0, 0);
+					return lastDate.getTime();
+				} else {
+					// Primeiro ponto: usar data especificada pelo usuário
+					const dateParts = dateStr.split('-');
+					const year = parseInt(dateParts[0]);
+					const month = parseInt(dateParts[1]) - 1;
+					const day = parseInt(dateParts[2]);
+					
+					const date = new Date(year, month, day, hours, minutes, 0, 0);
+					return date.getTime();
+				}
 			} catch(error) {
 				console.error('❌ Erro ao criar timestamp:', error);
-
 				return Date.now();
 			}
 		}
@@ -4954,26 +4983,34 @@ var Plugin = (function (exports, singleclick, map) {
 		function calculateVelocity(point1, point2) {
 			const distanceM = calculateDistanceMeters(point1, point2);
 			const timeDiffS = (point2.time - point1.time) / 1000;
-
-			if (timeDiffS <= 0) return 0;
-
-			return distanceM / timeDiffS;
+			
+			if (timeDiffS <= 0) {
+				console.log(`⚠️  Tempo inválido para cálculo: ${timeDiffS}s`);
+				return 0;
+			}
+			
+			// CORREÇÃO: Usar Math.abs() para garantir POSITIVO
+			const velocity = Math.abs(distanceM / timeDiffS);
+			
+			console.log(`📊 Velocidade calculada: ${velocity.toFixed(2)} m/s (${(velocity * 3.6).toFixed(1)} km/h)`);
+			
+			return velocity; // SEMPRE positivo
 		}
 
 		function calculateAcceleration(points) {
 			if (points.length < 3) return { acceleration: 0, hasSignificant: false };
-
+		
 			const lastPoints = points.slice(-3);
-			const v1 = calculateVelocity(lastPoints[0], lastPoints[1]);
-			const v2 = calculateVelocity(lastPoints[1], lastPoints[2]);
+			const v1 = Math.abs(calculateVelocity(lastPoints[0], lastPoints[1])); // CORREÇÃO: Math.abs
+			const v2 = Math.abs(calculateVelocity(lastPoints[1], lastPoints[2])); // CORREÇÃO: Math.abs
 			const Δt1 = (lastPoints[1].time - lastPoints[0].time) / 1000;
 			const Δt2 = (lastPoints[2].time - lastPoints[1].time) / 1000;
-
+		
 			if (Δt1 <= 0 || Δt2 <= 0) return { acceleration: 0, hasSignificant: false };
-
+		
 			const Δt = Δt2;
-			const acceleration = (v2 - v1) / Δt;
-			const velocityChangePercent = Math.abs((v2 - v1) / v1) * 100;
+			const acceleration = Math.abs(v2 - v1) / Δt; // CORREÇÃO: Math.abs
+			const velocityChangePercent = Math.abs((v2 - v1) / Math.max(v1, 0.001)) * 100;
 			const isSignificantByPercent = velocityChangePercent > 10;
 			const isSignificantByAbsolute = Math.abs(acceleration) > SIGNIFICANT_ACCELERATION;
 			const hasSignificant = isSignificantByAbsolute || isSignificantByPercent;
@@ -5055,17 +5092,66 @@ var Plugin = (function (exports, singleclick, map) {
 		}
 
 		function resetTracking() {
+			console.log('🔄 REINICIANDO TRACKING COMPLETAMENTE...');
+			
+			// 1. Limpar pontos
+			set(points, []);
+			
+			// 2. Desativar tracking
 			set(trackingMode, false);
-
-			if (get(points).length >= 2) {
-				calculateTrajectory();
+			
+			// 3. Limpar cálculos
+			set(lastCalculation, null);
+			set(projectedPosition, null);
+			
+			// 4. Remover marcadores do mapa
+			const mapObj = getMap();
+			if (mapObj) {
+				// Remover marcadores de pontos
+				leafletMarkers.forEach(marker => {
+					try {
+						if (marker && mapObj.hasLayer(marker)) {
+							mapObj.removeLayer(marker);
+						}
+					} catch (e) {
+						console.warn('⚠️  Erro ao remover marcador:', e);
+					}
+				});
+				
+				// Remover linhas
+				leafletLines.forEach(line => {
+					try {
+						if (line && mapObj.hasLayer(line)) {
+							mapObj.removeLayer(line);
+						}
+					} catch (e) {
+						console.warn('⚠️  Erro ao remover linha:', e);
+					}
+				});
+				
+				// Remover linha de projeção
+				if (projectionLine && mapObj.hasLayer(projectionLine)) {
+					try {
+						mapObj.removeLayer(projectionLine);
+						projectionLine = null;
+					} catch (e) {
+						console.warn('⚠️  Erro ao remover projeção:', e);
+					}
+				}
 			}
-
-			if (get(projectedPosition)) {
-				clearProjection();
-			}
+			
+			// 5. Limpar arrays
+			leafletMarkers = [];
+			leafletLines = [];
+			
+			// 6. Resetar horário
+			const now = new Date();
+			set(manualHours, now.getHours());
+			set(manualMinutes, now.getMinutes());
+			set(manualDate, now.toISOString().split('T')[0]); // Resetar data
+			
+			console.log('✅ TRACKING REINICIADO! Pontos: 0, Tracking: INATIVO');
 		}
-
 		function addWindyMarker(lat, lon, pointNumber, timestamp) {
 			try {
 				const marker = L.marker([lat, lon], {
