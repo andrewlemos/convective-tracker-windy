@@ -1,6 +1,6 @@
 const __pluginConfig =  {
   "name": "windy-plugin-convective-tracker",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "icon": "⚡",
   "title": "Convective Formation Tracker",
   "description": "Tracker para monitorar e prever deslocamento de formações convectivas",
@@ -2072,8 +2072,22 @@ function calculateDistanceKm(point1, point2) {
 function calculateVelocity(point1, point2) {
 	const distanceM = calculateDistanceMeters(point1, point2);
 	const timeDiffS = (point2.time - point1.time) / 1000;
-	if (timeDiffS <= 0) return 0;
-	return Math.abs(distanceM / timeDiffS); // CORREÇÃO 1: Usar Math.abs() para velocidade sempre positiva
+	
+	if (timeDiffS <= 0) {
+		console.log(`⚠️  Tempo inválido para cálculo de velocidade: ${timeDiffS}s`);
+		return 0;
+	}
+	
+	const velocity = distanceM / timeDiffS;
+	const absoluteVelocity = Math.abs(velocity);
+	
+	console.log(`📊 Cálculo de velocidade:`);
+	console.log(`   Distância: ${distanceM.toFixed(0)} m`);
+	console.log(`   Tempo: ${timeDiffS.toFixed(1)} s`);
+	console.log(`   Velocidade: ${velocity.toFixed(2)} m/s`);
+	console.log(`   Velocidade (absoluta): ${absoluteVelocity.toFixed(2)} m/s`);
+	
+	return absoluteVelocity; // SEMPRE retornar valor positivo
 }
 
 function calculateAcceleration(points) {
@@ -2218,48 +2232,71 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	function resetTracking() {
-		// CORREÇÃO 3: Função resetTracking corrigida para limpar completamente
-		console.log('🔄 Reiniciando tracking...');
+	console.log('🔄 REINICIANDO TRACKING COMPLETAMENTE...');
+	
+	// 1. Limpar pontos do estado
+	$$invalidate(0, points = []);
+	
+	// 2. Desativar modo tracking
+	$$invalidate(1, trackingMode = false);
+	
+	// 3. Limpar cálculos
+	$$invalidate(2, lastCalculation = null);
+	$$invalidate(4, projectedPosition = null);
+	
+	// 4. Remover todos os marcadores do mapa
+	const mapObj = getMap();
+	if (mapObj) {
+		console.log('🗺️  Removendo marcadores do mapa...');
 		
-		// Limpa todos os pontos
-		$$invalidate(0, points = []);
-		
-		// Desativa o modo de tracking
-		$$invalidate(1, trackingMode = false);
-		
-		// Limpa cálculos anteriores
-		$$invalidate(2, lastCalculation = null);
-		$$invalidate(4, projectedPosition = null);
-		
-		// Remove marcadores do mapa
-		const mapObj = getMap();
-		if (mapObj) {
-			leafletMarkers.forEach(marker => {
-				if (mapObj.hasLayer(marker)) {
+		// Remover marcadores de pontos
+		leafletMarkers.forEach(marker => {
+			try {
+				if (marker && mapObj.hasLayer(marker)) {
 					mapObj.removeLayer(marker);
 				}
-			});
-			
-			leafletLines.forEach(line => {
-				if (mapObj.hasLayer(line)) {
+			} catch (e) {
+				console.warn('⚠️  Erro ao remover marcador:', e);
+			}
+		});
+		
+		// Remover linhas de trajetória
+		leafletLines.forEach(line => {
+			try {
+				if (line && mapObj.hasLayer(line)) {
 					mapObj.removeLayer(line);
 				}
-			});
-			
-			// Remove linha de projeção se existir
-			if (projectionLine && mapObj.hasLayer(projectionLine)) {
+			} catch (e) {
+				console.warn('⚠️  Erro ao remover linha:', e);
+			}
+		});
+		
+		// Remover linha de projeção
+		if (projectionLine && mapObj.hasLayer(projectionLine)) {
+			try {
 				mapObj.removeLayer(projectionLine);
 				projectionLine = null;
+			} catch (e) {
+				console.warn('⚠️  Erro ao remover linha de projeção:', e);
 			}
 		}
-		
-		// Limpa arrays de marcadores e linhas
-		leafletMarkers = [];
-		leafletLines = [];
-		
-		console.log('✅ Tracking reiniciado. Todos os pontos foram removidos.');
 	}
-
+	
+	// 5. Limpar arrays internos
+	leafletMarkers = [];
+	leafletLines = [];
+	
+	// 6. Resetar tempo manual para agora
+	const now = new Date();
+	$$invalidate(7, manualHours = now.getHours());
+	$$invalidate(8, manualMinutes = now.getMinutes());
+	
+	console.log('✅ TRACKING REINICIADO COM SUCESSO!');
+	console.log('   - Pontos: 0');
+	console.log('   - Tracking: INATIVO');
+	console.log('   - Marcadores: removidos');
+	console.log('   - Cálculos: resetados');
+}
 	function addWindyMarker(lat, lon, pointNumber, timestamp) {
 		try {
 			const marker = L.marker([lat, lon], {
@@ -2469,17 +2506,25 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	function projectTrajectory() {
-		if (!lastCalculation || points.length < 2) {
-			console.log('Não há cálculo disponível para projetar');
-			return;
-		}
-
-		try {
-			const lastPoint = points[points.length - 1];
-			const timeInSeconds = projectionTime * 60;
-			let projectedDistanceM;
-			let finalVelocityMps;
-			let useAcceleration = false;
+		if (lastCalculation.useUniformMotion && !forceUseAcceleration) {
+			projectedDistanceM = lastCalculation.currentVelocity * timeInSeconds;
+			finalVelocityMps = Math.max(0, lastCalculation.currentVelocity); // GARANTIR POSITIVO
+			useAcceleration = false;
+			console.log('\n📏 PROJEÇÃO MRU (Movimento Uniforme):');
+			console.log(`   Fórmula: s = v * t`);
+			console.log(`   v = ${lastCalculation.currentVelocity.toFixed(2)} m/s`);
+			console.log(`   t = ${timeInSeconds} s`);
+			console.log(`   s = ${lastCalculation.currentVelocity.toFixed(2)} * ${timeInSeconds}`);
+			console.log(`   s = ${projectedDistanceM.toFixed(0)} m`);
+		} else {
+			const v0 = Math.max(0, lastCalculation.currentVelocity); // GARANTIR POSITIVO
+			const a = Math.abs(lastCalculation.acceleration); // GARANTIR POSITIVO
+			const part1 = v0 * timeInSeconds;
+			const part2 = 0.5 * a * timeInSeconds * timeInSeconds;
+			projectedDistanceM = part1 + part2;
+			finalVelocityMps = v0 + a * timeInSeconds;
+			finalVelocityMps = Math.max(0, finalVelocityMps); // GARANTIR POSITIVO
+			useAcceleration = true;
 			console.log(('=').repeat(60));
 			console.log('🚀 INICIANDO PROJEÇÃO DE TRAJETÓRIA');
 			console.log(('=').repeat(60));
