@@ -1,10 +1,11 @@
 {
   "name": "windy-plugin-convective-tracker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icon": "⚡",
   "title": "Convective Formation Tracker",
   "description": "Tracker para monitorar e prever deslocamento de formações convectivas",
   "author": "Andrew Lemos",
+  "private": false,
   "desktopUI": "rhpane",
   "mobileUI": "fullscreen",
   "desktopWidth": 450,
