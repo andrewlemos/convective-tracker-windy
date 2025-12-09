@@ -12,82 +12,71 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
+      - name: Verify dist folder exists
         run: |
-          echo "Verificando package-lock.json..."
-          if [ -f package-lock.json ]; then
-            echo "Usando npm ci (tem package-lock.json)"
-            npm ci
-          else
-            echo "Usando npm install (sem package-lock.json)"
-            npm install
-          fi
-
-      - name: Build plugin
-        run: |
-          echo "Executando build..."
-          npm run build
+          echo "=== Verificando estrutura ==="
+          ls -la
+          echo ""
           echo "=== Conteúdo da pasta dist ==="
           ls -la dist/
 
       - name: Publish to Windy
         run: |
-          echo "Entrando na pasta dist..."
+          echo "Preparando publicação..."
+          
+          # Vamos trabalhar na pasta dist
           cd dist
           
-          echo "=== Verificando arquivos em dist ==="
+          echo "=== Arquivos em dist ==="
           ls -la
           
-          # Cria arquivo plugin-info.json
+          # Verifica se plugin.json existe
+          if [ ! -f plugin.json ]; then
+            echo "❌ ERRO: plugin.json não encontrado em dist/"
+            exit 1
+          fi
+          
+          echo "=== Conteúdo do plugin.json original ==="
+          cat plugin.json
+          
+          # Cria arquivo plugin-info.json com informações do GitHub
           echo '{
             "repositoryName": "${{ github.repository }}",
             "commitSha": "${{ github.sha }}",
             "repositoryOwner": "${{ github.repository_owner }}"
           }' > plugin-info.json
           
-          echo "=== Conteúdo de plugin-info.json ==="
+          echo "=== Conteúdo do plugin-info.json ==="
           cat plugin-info.json
           
-          # Verifica se plugin.json existe
-          if [ -f plugin.json ]; then
-            echo "=== plugin.json existe ==="
-            cat plugin.json
-            
-            # Se tiver jq instalado
-            if command -v jq &> /dev/null; then
-              echo "Usando jq para combinar JSON..."
-              jq -s '.[0] * .[1]' plugin.json plugin-info.json > plugin2.json
-              mv plugin2.json plugin.json
-            else
-              echo "Usando Node.js para combinar JSON..."
-              node -e "
-              const fs = require('fs');
-              const plugin = JSON.parse(fs.readFileSync('plugin.json'));
-              const info = JSON.parse(fs.readFileSync('plugin-info.json'));
-              const combined = {...plugin, ...info};
-              fs.writeFileSync('plugin.json', JSON.stringify(combined, null, 2));
-              console.log('JSON combinado com sucesso');
-              "
-            fi
+          # Combina os dois JSONs
+          echo "Combinando JSONs..."
+          if command -v jq &> /dev/null; then
+            echo "Usando jq..."
+            jq -s '.[0] * .[1]' plugin.json plugin-info.json > plugin-combined.json
+            mv plugin-combined.json plugin.json
           else
-            echo "=== Criando plugin.json básico ==="
-            mv plugin-info.json plugin.json
+            echo "Usando Node.js..."
+            node -e "
+            const fs = require('fs');
+            const plugin = JSON.parse(fs.readFileSync('plugin.json'));
+            const info = JSON.parse(fs.readFileSync('plugin-info.json'));
+            const combined = {...plugin, ...info};
+            fs.writeFileSync('plugin.json', JSON.stringify(combined, null, 2));
+            console.log('JSONs combinados com sucesso');
+            "
           fi
           
           echo "=== plugin.json final ==="
           cat plugin.json
           
-          # Cria arquivo tar
+          # Cria arquivo tar com TODOS os arquivos da pasta dist
           echo "Criando arquivo tar..."
           tar cf plugin.tar --exclude='./plugin.tar' .
           
-          # Envia para Windy
-          echo "Enviando plugin para Windy..."
+          echo "Enviando para Windy..."
+          
+          # Faz o upload
           response=$(curl -s -w "\n%{http_code}" -XPOST 'https://node.windy.com/plugins/v1.0/upload' \
             -H "x-windy-api-key: ${{ secrets.WINDY_API_KEY }}" \
             -F "plugin_archive=@./plugin.tar")
@@ -95,18 +84,44 @@ jobs:
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | head -n -1)
           
+          echo "=== Resposta do servidor ==="
           echo "HTTP Code: $http_code"
           echo "Response: $body"
           
-          # Extrai URL da resposta se bem-sucedido
+          # Verifica sucesso
           if [ "$http_code" = "200" ]; then
+            # Extrai URL da resposta
             url=$(echo "$body" | grep -o 'https://windy-plugins.com/[^"]*')
-            echo "✅ Plugin publicado com sucesso!"
-            echo "🔗 Plugin installation URL: $url"
-            echo "::set-output name=plugin_url::$url"
+            if [ -n "$url" ]; then
+              echo ""
+              echo "✅ ✅ ✅ PLUGIN PUBLICADO COM SUCESSO! ✅ ✅ ✅"
+              echo ""
+              echo "🔗 URL DO PLUGIN:"
+              echo "$url"
+              echo ""
+              echo "📝 COMO USAR:"
+              echo "1. Acesse https://www.windy.com"
+              echo "2. Vá em Plugins → Adicionar Plugin"
+              echo "3. Cole esta URL: $url"
+              echo "4. O plugin será carregado!"
+              echo ""
+              # Define output para usar no GitHub
+              echo "plugin_url=$url" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️  Publicação OK mas não encontrei URL na resposta"
+              echo "Resposta completa: $body"
+            fi
           else
-            echo "❌ Erro ao publicar plugin"
+            echo "❌ ❌ ❌ ERRO NA PUBLICAÇÃO ❌ ❌ ❌"
+            echo "Código HTTP: $http_code"
+            echo "Resposta: $body"
+            echo ""
+            echo "Possíveis problemas:"
+            echo "1. Chave API inválida ou expirada"
+            echo "2. plugin.json mal formatado"
+            echo "3. Servidor Windy indisponível"
             exit 1
           fi
           
-          rm plugin.tar
+          # Limpa
+          rm plugin.tar plugin-info.json
