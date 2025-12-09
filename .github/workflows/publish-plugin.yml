@@ -1,8 +1,6 @@
 name: Publish Plugin to Windy
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:  # Permite execução manual
 
 jobs:
@@ -20,14 +18,30 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          echo "Verificando package-lock.json..."
+          if [ -f package-lock.json ]; then
+            echo "Usando npm ci (tem package-lock.json)"
+            npm ci
+          else
+            echo "Usando npm install (sem package-lock.json)"
+            npm install
+          fi
 
       - name: Build plugin
-        run: npm run build
+        run: |
+          echo "Executando build..."
+          npm run build
+          echo "=== Conteúdo da pasta dist ==="
+          ls -la dist/
 
       - name: Publish to Windy
         run: |
+          echo "Entrando na pasta dist..."
           cd dist
+          
+          echo "=== Verificando arquivos em dist ==="
+          ls -la
           
           # Cria arquivo plugin-info.json
           echo '{
@@ -36,26 +50,40 @@ jobs:
             "repositoryOwner": "${{ github.repository_owner }}"
           }' > plugin-info.json
           
+          echo "=== Conteúdo de plugin-info.json ==="
+          cat plugin-info.json
+          
           # Verifica se plugin.json existe
           if [ -f plugin.json ]; then
+            echo "=== plugin.json existe ==="
+            cat plugin.json
+            
             # Se tiver jq instalado
             if command -v jq &> /dev/null; then
+              echo "Usando jq para combinar JSON..."
               jq -s '.[0] * .[1]' plugin.json plugin-info.json > plugin2.json
               mv plugin2.json plugin.json
             else
-              # Alternativa sem jq usando Node.js
+              echo "Usando Node.js para combinar JSON..."
               node -e "
               const fs = require('fs');
               const plugin = JSON.parse(fs.readFileSync('plugin.json'));
               const info = JSON.parse(fs.readFileSync('plugin-info.json'));
-              fs.writeFileSync('plugin.json', JSON.stringify({...plugin, ...info}, null, 2));
+              const combined = {...plugin, ...info};
+              fs.writeFileSync('plugin.json', JSON.stringify(combined, null, 2));
+              console.log('JSON combinado com sucesso');
               "
             fi
           else
+            echo "=== Criando plugin.json básico ==="
             mv plugin-info.json plugin.json
           fi
           
+          echo "=== plugin.json final ==="
+          cat plugin.json
+          
           # Cria arquivo tar
+          echo "Criando arquivo tar..."
           tar cf plugin.tar --exclude='./plugin.tar' .
           
           # Envia para Windy
