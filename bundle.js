@@ -4823,7 +4823,7 @@ var Plugin = (function (exports, singleclick, map) {
 	var root_8 = from_html(`<div class="point-metrics svelte-1k5fwm8"><span class="svelte-1k5fwm8"> </span> <span class="svelte-1k5fwm8"> </span></div>`);
 	var root_7 = from_html(`<div class="point-item svelte-1k5fwm8"><div class="point-header svelte-1k5fwm8"><span class="point-number svelte-1k5fwm8"></span> <span class="point-time svelte-1k5fwm8"> </span></div> <div class="point-coords svelte-1k5fwm8"><span class="svelte-1k5fwm8"> </span> <span class="svelte-1k5fwm8"> </span></div> <div class="point-time-info svelte-1k5fwm8"><small class="svelte-1k5fwm8"> </small></div> <!></div>`);
 	var root_9 = from_html(`<div class="no-points svelte-1k5fwm8">Nenhum ponto marcado ainda. Ative o modo de marcação e clique no mapa.</div>`);
-	var root = from_html(`<div class="plugin__mobile-header svelte-1k5fwm8">Convective Tracker</div> <section class="plugin__content svelte-1k5fwm8"><div class="plugin-logo-container svelte-1k5fwm8"><div class="logo-title svelte-1k5fwm8">Convective Tracker</div></div> <div class="plugin__title plugin__title--chevron-back svelte-1k5fwm8" style="display: none;">Convective Tracker</div> <div class="tracker-controls svelte-1k5fwm8"><div class="control-section svelte-1k5fwm8"><h3 class="svelte-1k5fwm8">Controle de Tempo</h3> <div class="time-control-section svelte-1k5fwm8"><div class="manual-time-input svelte-1k5fwm8"><div class="time-input-row svelte-1k5fwm8"><div class="input-group svelte-1k5fwm8"><label for="manualHours" class="svelte-1k5fwm8">Hora:</label> <input type="number" id="manualHours" min="0" max="23" placeholder="HH" class="svelte-1k5fwm8"/></div> <div class="input-group svelte-1k5fwm8"><label for="manualMinutes" class="svelte-1k5fwm8">Minutos:</label> <input type="number" id="manualMinutes" min="0" max="59" placeholder="MM" class="svelte-1k5fwm8"/></div> <button class="btn btn-secondary svelte-1k5fwm8">Agora</button></div> <div class="time-display-info svelte-1k5fwm8"><small class="svelte-1k5fwm8"> </small></div></div></div></div> <div class="control-section svelte-1k5fwm8"><h3 class="svelte-1k5fwm8">Marcador de Pontos</h3> <div class="button-group svelte-1k5fwm8"><button class="btn btn-primary svelte-1k5fwm8"> </button> <button class="btn btn-warning svelte-1k5fwm8">Reiniciar Tracking</button> <button class="btn btn-secondary svelte-1k5fwm8">Limpar Tudo</button></div> <div class="info-display svelte-1k5fwm8"><p class="svelte-1k5fwm8"> </p> <p class="svelte-1k5fwm8">Modo: <span> </span></p> <!></div></div> <div class="control-section svelte-1k5fwm8"><h3 class="svelte-1k5fwm8">Projeção de Trajetória</h3> <div class="projection-controls svelte-1k5fwm8"><div class="time-input svelte-1k5fwm8"><label for="projectionTime" class="svelte-1k5fwm8">Tempo de projeção (minutos):</label> <div class="time-slider-container svelte-1k5fwm8"><input type="range" id="projectionTime" min="1" max="120" step="1" class="svelte-1k5fwm8"/> <div class="slider-ticks svelte-1k5fwm8"><span class="svelte-1k5fwm8">1</span><span class="svelte-1k5fwm8">30</span><span class="svelte-1k5fwm8">60</span><span class="svelte-1k5fwm8">90</span><span class="svelte-1k5fwm8">120</span></div></div> <div class="time-display svelte-1k5fwm8"><span class="svelte-1k5fwm8"> </span> <span class="unit-note svelte-1k5fwm8"> </span></div></div> <div class="projection-options svelte-1k5fwm8"><label class="checkbox-label svelte-1k5fwm8"><input type="checkbox" class="svelte-1k5fwm8"/> <span class="svelte-1k5fwm8">Usar movimento uniforme (ignorar aceleração)</span></label> <label class="checkbox-label svelte-1k5fwm8"><input type="checkbox" class="svelte-1k5fwm8"/> <span class="svelte-1k5fwm8">Manter linhas de projeção</span></label></div> <div class="button-group svelte-1k5fwm8"><button class="btn btn-primary svelte-1k5fwm8">Projetar Trajetória</button> <button class="btn btn-secondary svelte-1k5fwm8">Limpar Projeção</button></div></div> <!></div> <div class="control-section svelte-1k5fwm8"><h3 class="svelte-1k5fwm8">Histórico de Pontos</h3> <div class="points-list svelte-1k5fwm8"></div></div></div> <div class="plugin-footer svelte-1k5fwm8">Desenvolvido por Andrew Lemos</div></section>`, 1);
+	var root = from_html(`<div class="plugin__mobile-header svelte-1k5fwm8">Convective Tracker</div> <section class="plugin__content svelte-1k5fwm8"><div class="plugin-logo-container svelte-1k5fwm8"><div class="logo-title svelte-1k5fwm8">Convective Tracker</div></div> <div class="plugin__title plugin__title--chevron-back svelte-1k5fwm8" style="display: none;">Convective Tracker</div> <div class="tracker-controls svelte-1k5fwm8"><div class="control-section svelte-1k5fwm8"><h3 class="svelte-1k5fwm8">Controle de Tempo</h3> <div class="time-control-section svelte-1k5fwm8"><div class="manual-time-input svelte-1k5fwm8"><div class="time-input-row svelte-1k5fwm8"><div class="input-group svelte-1k5fwm8"><label for="manualHours" class="svelte-1k5fwm8">Hora:</label> <input type="number" id="manualHours" min="0" max="23" placeholder="HH" class="svelte-1k5fwm8"/></div> <div class="input-group svelte-1k5fwm8"><label for="manualMinutes" class="svelte-1k5fwm8">Minutos:</label> <input type="number" id="manualMinutes" min="0" max="59" placeholder="MM" class="svelte-1k5fwm8"/></div> <button class="btn btn-secondary svelte-1k5fwm8">Agora</button></div> <div class="time-display-info svelte-1k5fwm8"><small class="svelte-1k5fwm8"> </small></div></div></div></div> <div class="control-section svelte-1k5fwm8"><h3 class="svelte-1k5fwm8">Marcador de Pontos</h3> <div class="button-group svelte-1k5fwm8"><button class="btn btn-primary svelte-1k5fwm8"> </button> <button class="btn btn-warning svelte-1k5fwm8">Reiniciar Tracking</button> <button class="btn btn-secondary svelte-1k5fwm8">Limpar Tudo</button></div> <div class="info-display svelte-1k5fwm8"><p class="svelte-1k5fwm8"> </p> <p class="svelte-1k5fwm8">Modo: <span> </span></p> <!></div></div> <div class="control-section svelte-1k5fwm8"><h3 class="svelte-1k5fwm8">Projeção de Trajetória</h3> <div class="projection-controls svelte-1k5fwm8"><div class="time-input svelte-1k5fwm8"><label for="projectionTime" class="svelte-1k5fwm8">Tempo de projeção (minutos):</label> <div class="time-slider-container svelte-1k5fwm8"><input type="range" id="projectionTime" min="1" max="240" step="1" class="svelte-1k5fwm8"/> <div class="slider-ticks svelte-1k5fwm8"><span class="svelte-1k5fwm8">1</span><span class="svelte-1k5fwm8">30</span><span class="svelte-1k5fwm8">60</span><span class="svelte-1k5fwm8">90</span><span class="svelte-1k5fwm8">240</span></div></div> <div class="time-display svelte-1k5fwm8"><span class="svelte-1k5fwm8"> </span> <span class="unit-note svelte-1k5fwm8"> </span></div></div> <div class="projection-options svelte-1k5fwm8"><label class="checkbox-label svelte-1k5fwm8"><input type="checkbox" class="svelte-1k5fwm8"/> <span class="svelte-1k5fwm8">Usar movimento uniforme (ignorar aceleração)</span></label> <label class="checkbox-label svelte-1k5fwm8"><input type="checkbox" class="svelte-1k5fwm8"/> <span class="svelte-1k5fwm8">Manter linhas de projeção</span></label></div> <div class="button-group svelte-1k5fwm8"><button class="btn btn-primary svelte-1k5fwm8">Projetar Trajetória</button> <button class="btn btn-secondary svelte-1k5fwm8">Limpar Projeção</button></div></div> <!></div> <div class="control-section svelte-1k5fwm8"><h3 class="svelte-1k5fwm8">Histórico de Pontos</h3> <div class="points-list svelte-1k5fwm8"></div></div></div> <div class="plugin-footer svelte-1k5fwm8">Desenvolvido por Andrew Lemos</div></section>`, 1);
 
 	function Plugin($$anchor, $$props) {
 		push($$props, false);
@@ -5371,167 +5371,170 @@ var Plugin = (function (exports, singleclick, map) {
 		}
 
 		function projectTrajectory() {
-			if (!get(lastCalculation) || get(points).length < 2) {
-				console.log('Não há cálculo disponível para projetar');
-
-				return;
-			}
-
-			try {
-				const lastPoint = get(points)[get(points).length - 1];
-				const timeInSeconds = get(projectionTime) * 60;
-				let projectedDistanceM;
-				let finalVelocityMps;
-				let useAcceleration = false;
-
-				console.log(('=').repeat(60));
-				console.log('🚀 INICIANDO PROJEÇÃO DE TRAJETÓRIA');
-				console.log(('=').repeat(60));
-				console.log(`   Tempo de projeção: ${timeInSeconds} s (${get(projectionTime)} min)`);
-				console.log(`   Velocidade atual: ${get(lastCalculation).currentVelocity.toFixed(2)} m/s (${(get(lastCalculation).currentVelocity * 3.6).toFixed(1)} km/h)`);
-				console.log(`   Aceleração: ${get(lastCalculation).acceleration.toFixed(4)} m/s²`);
-				console.log(`   Direção: ${get(lastCalculation).currentDirection.toFixed(0)}°`);
-				console.log(`   Aceleração significativa? ${get(lastCalculation).hasSignificantAcceleration ? 'SIM ✅' : 'NÃO ❌'}`);
-				console.log(`   Config. usuário (usar MRU): ${get(useUniformMotion) ? 'SIM' : 'NÃO'}`);
-				console.log(`   Método calculado: ${get(lastCalculation).useUniformMotion ? 'MRU' : 'MRUV'}`);
-
-				let forceUseAcceleration = false;
-
-				if (get(lastCalculation).hasSignificantAcceleration && !get(useUniformMotion)) {
-					forceUseAcceleration = true;
-					console.log('⚡ FORÇANDO USO DE MRUV (aceleração significativa detectada)');
-				}
-
-				if (get(lastCalculation).useUniformMotion && !forceUseAcceleration) {
-					projectedDistanceM = get(lastCalculation).currentVelocity * timeInSeconds;
-					finalVelocityMps = get(lastCalculation).currentVelocity;
-					useAcceleration = false;
-					console.log('\n📏 PROJEÇÃO MRU (Movimento Uniforme):');
-					console.log(`   Fórmula: s = v * t`);
-					console.log(`   v = ${get(lastCalculation).currentVelocity.toFixed(2)} m/s`);
-					console.log(`   t = ${timeInSeconds} s`);
-					console.log(`   s = ${get(lastCalculation).currentVelocity.toFixed(2)} * ${timeInSeconds}`);
-					console.log(`   s = ${projectedDistanceM.toFixed(0)} m`);
-				} else {
-					const v0 = get(lastCalculation).currentVelocity;
-					const a = get(lastCalculation).acceleration;
-					const part1 = v0 * timeInSeconds;
-					const part2 = 0.5 * a * timeInSeconds * timeInSeconds;
-
-					projectedDistanceM = part1 + part2;
-					finalVelocityMps = v0 + a * timeInSeconds;
-					useAcceleration = true;
-					console.log('\n📏 PROJEÇÃO MRUV (Movimento Uniformemente Variado):');
-					console.log(`   Fórmula: s = v0*t + 0.5*a*t²`);
-					console.log(`   v0 = ${v0.toFixed(2)} m/s`);
-					console.log(`   a = ${a.toFixed(4)} m/s²`);
-					console.log(`   t = ${timeInSeconds} s`);
-					console.log(`   v0*t = ${v0.toFixed(2)} * ${timeInSeconds} = ${part1.toFixed(0)} m`);
-					console.log(`   0.5*a*t² = 0.5 * ${a.toFixed(4)} * ${timeInSeconds}² = ${part2.toFixed(0)} m`);
-					console.log(`   s = ${part1.toFixed(0)} + ${part2.toFixed(0)} = ${projectedDistanceM.toFixed(0)} m`);
-					console.log(`\n📏 Velocidade final (v = v0 + a*t):`);
-					console.log(`   v = ${v0.toFixed(2)} + ${a.toFixed(4)} * ${timeInSeconds}`);
-					console.log(`   v = ${v0.toFixed(2)} + ${(a * timeInSeconds).toFixed(2)}`);
-					console.log(`   v = ${finalVelocityMps.toFixed(2)} m/s`);
-				}
-
-				const MAX_DISTANCE_M = 10000 * 1000;
-				const MAX_VELOCITY_MPS = 500;
-
-				if (projectedDistanceM < 0) {
-					console.warn(`⚠️ Distância negativa detectada: ${projectedDistanceM.toFixed(0)} m, ajustando para 0`);
-					projectedDistanceM = 0;
-					finalVelocityMps = 0;
-				}
-
-				if (projectedDistanceM > MAX_DISTANCE_M) {
-					console.warn(`⚠️ Distância muito alta: ${projectedDistanceM.toFixed(0)} m, limitando para ${MAX_DISTANCE_M} m`);
-					projectedDistanceM = MAX_DISTANCE_M;
-				}
-
-				if (finalVelocityMps < 0) finalVelocityMps = 0;
-
-				if (finalVelocityMps > MAX_VELOCITY_MPS) {
-					console.warn(`⚠️ Velocidade final muito alta: ${finalVelocityMps.toFixed(1)} m/s, limitando para ${MAX_VELOCITY_MPS} m/s`);
-					finalVelocityMps = MAX_VELOCITY_MPS;
-				}
-
-				const projectedDistanceKm = projectedDistanceM / 1000;
-
-				console.log(`\n📏 DISTÂNCIA FINAL PROJETADA: ${projectedDistanceKm.toFixed(1)} km`);
-
-				const bearing = get(lastCalculation).currentDirection;
-				const destination = calculateDestinationPoint(lastPoint.lat, lastPoint.lon, bearing, projectedDistanceKm);
-
-				if (destination.lat < -90 || destination.lat > 90 || destination.lon < -180 || destination.lon > 180) {
-					console.warn(`⚠️ Coordenadas fora dos limites: Lat=${destination.lat.toFixed(4)}, Lon=${destination.lon.toFixed(4)}`);
-
-					if (destination.lat < -90) destination.lat = -90;
-					if (destination.lat > 90) destination.lat = 90;
-					if (destination.lon < -180) destination.lon = -180 + 360;
-					if (destination.lon > 180) destination.lon = 180 - 360;
-				}
-
-				const arrivalTime = new Date(lastPoint.time + get(projectionTime) * 60 * 1000);
-				const arrivalTimeStr = arrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-				set(projectedPosition, {
-					lat: destination.lat,
-					lon: destination.lon,
-					distance: projectedDistanceKm,
-					estimatedArrival: arrivalTimeStr,
-					useAcceleration,
-					finalVelocity: finalVelocityMps
-				});
-
-				clearProjection();
-
-				const destMarker = L.marker([destination.lat, destination.lon], {
-					icon: L.divIcon({
-						html: useAcceleration
-							? '<div style="background: #ff00ff; color: #fff; width: 28px; height: 28px; border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; box-shadow: 0 0 10px #ff00ff;">🎯</div>'
-							: '<div style="background: #00ff00; color: #000; width: 28px; height: 28px; border-radius: 50%; border: 3px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; box-shadow: 0 0 10px #00ff00;">🎯</div>',
-
-						iconSize: [28, 28],
-						className: 'destination-marker'
-					}),
-
-					title: `Destino em ${get(projectionTime)} minutos`
-				}).addTo(map.map);
-
-				destMarker.bindTooltip(`Destino em ${get(projectionTime)} min<br>` + `Distância: ${projectedDistanceKm.toFixed(1)} km<br>` + `Velocidade final: ${finalVelocityMps.toFixed(1)} m/s (${(finalVelocityMps * 3.6).toFixed(1)} km/h)<br>` + `Chegada: ${arrivalTimeStr}<br>` + `Método: ${useAcceleration ? 'MRUV (com aceleração)' : 'MRU (sem aceleração)'}`, { permanent: false, direction: 'top' });
-				leafletMarkers.push(destMarker);
-
-				projectionLine = L.polyline(
-					[
-						[lastPoint.lat, lastPoint.lon],
-						[destination.lat, destination.lon]
-					],
-					{
-						color: useAcceleration ? '#ff00ff' : '#00ff00',
-						weight: 3,
-						opacity: 0.8,
-						dashArray: useAcceleration ? '10, 10' : null,
-						lineCap: 'round'
-					}
-				).addTo(map.map);
-
-				console.log('\n🎯 RESULTADO DA PROJEÇÃO:');
-				console.log(('=').repeat(60));
-				console.log(`   Posição: ${destination.lat.toFixed(4)}°, ${destination.lon.toFixed(4)}°`);
-				console.log(`   Distância: ${projectedDistanceKm.toFixed(1)} km`);
-				console.log(`   Velocidade final: ${finalVelocityMps.toFixed(1)} m/s (${(finalVelocityMps * 3.6).toFixed(1)} km/h)`);
-				console.log(`   Chegada: ${arrivalTimeStr}`);
-
-				console.log(`   Método: ${useAcceleration
-				? 'MRUV (Movimento Uniformemente Variado)'
-				: 'MRU (Movimento Uniforme)'}`);
-
-				console.log(('=').repeat(60));
-			} catch(error) {
-				console.error('❌ ERRO AO PROJETAR TRAJETÓRIA:', error);
-				alert('Erro ao projetar trajetória: ' + error.message);
-			}
+		    if (!get(lastCalculation) || get(points).length < 2) {
+		        console.log('Não há cálculo disponível para projetar');
+		        return;
+		    }
+		
+		    try {
+		        const lastPoint = get(points)[get(points).length - 1];
+		        const timeInSeconds = get(projectionTime) * 60;
+		        let projectedDistanceM;
+		        let finalVelocityMps;
+		        let useAcceleration = false;
+		
+		        console.log(('=').repeat(60));
+		        console.log('🚀 INICIANDO PROJEÇÃO DE TRAJETÓRIA');
+		        console.log(('=').repeat(60));
+		        console.log(`   Tempo de projeção: ${timeInSeconds} s (${get(projectionTime)} min)`);
+		        console.log(`   Velocidade atual: ${Math.abs(get(lastCalculation).currentVelocity).toFixed(2)} m/s (${(Math.abs(get(lastCalculation).currentVelocity) * 3.6).toFixed(1)} km/h)`);
+		        console.log(`   Aceleração: ${Math.abs(get(lastCalculation).acceleration).toFixed(4)} m/s²`);
+		        console.log(`   Direção: ${get(lastCalculation).currentDirection.toFixed(0)}°`);
+		        console.log(`   Aceleração significativa? ${get(lastCalculation).hasSignificantAcceleration ? 'SIM ✅' : 'NÃO ❌'}`);
+		        console.log(`   Config. usuário (usar MRU): ${get(useUniformMotion) ? 'SIM' : 'NÃO'}`);
+		        console.log(`   Método calculado: ${get(lastCalculation).useUniformMotion ? 'MRU' : 'MRUV'}`);
+		
+		        let forceUseAcceleration = false;
+		
+		        if (get(lastCalculation).hasSignificantAcceleration && !get(useUniformMotion)) {
+		            forceUseAcceleration = true;
+		            console.log('⚡ FORÇANDO USO DE MRUV (aceleração significativa detectada)');
+		        }
+		
+		        // Usar valores absolutos para cálculos
+		        const absVelocity = Math.abs(get(lastCalculation).currentVelocity);
+		        const absAcceleration = Math.abs(get(lastCalculation).acceleration);
+		
+		        if (get(lastCalculation).useUniformMotion && !forceUseAcceleration) {
+		            projectedDistanceM = absVelocity * timeInSeconds;
+		            finalVelocityMps = absVelocity;
+		            useAcceleration = false;
+		            console.log('\n📏 PROJEÇÃO MRU (Movimento Uniforme):');
+		            console.log(`   Fórmula: s = |v| * t`);
+		            console.log(`   |v| = ${absVelocity.toFixed(2)} m/s`);
+		            console.log(`   t = ${timeInSeconds} s`);
+		            console.log(`   s = ${absVelocity.toFixed(2)} * ${timeInSeconds}`);
+		            console.log(`   s = ${projectedDistanceM.toFixed(0)} m`);
+		        } else {
+		            const v0 = absVelocity;
+		            const a = absAcceleration;
+		            const part1 = v0 * timeInSeconds;
+		            const part2 = 0.5 * a * timeInSeconds * timeInSeconds;
+		
+		            projectedDistanceM = part1 + part2;
+		            finalVelocityMps = v0 + a * timeInSeconds;
+		            useAcceleration = true;
+		            console.log('\n📏 PROJEÇÃO MRUV (Movimento Uniformemente Variado):');
+		            console.log(`   Fórmula: s = |v0|*t + 0.5*|a|*t²`);
+		            console.log(`   |v0| = ${v0.toFixed(2)} m/s`);
+		            console.log(`   |a| = ${a.toFixed(4)} m/s²`);
+		            console.log(`   t = ${timeInSeconds} s`);
+		            console.log(`   |v0|*t = ${v0.toFixed(2)} * ${timeInSeconds} = ${part1.toFixed(0)} m`);
+		            console.log(`   0.5*|a|*t² = 0.5 * ${a.toFixed(4)} * ${timeInSeconds}² = ${part2.toFixed(0)} m`);
+		            console.log(`   s = ${part1.toFixed(0)} + ${part2.toFixed(0)} = ${projectedDistanceM.toFixed(0)} m`);
+		            console.log(`\n📏 Velocidade final (|v| = |v0| + |a|*t):`);
+		            console.log(`   |v| = ${v0.toFixed(2)} + ${a.toFixed(4)} * ${timeInSeconds}`);
+		            console.log(`   |v| = ${v0.toFixed(2)} + ${(a * timeInSeconds).toFixed(2)}`);
+		            console.log(`   |v| = ${finalVelocityMps.toFixed(2)} m/s`);
+		        }
+		
+		        const MAX_DISTANCE_M = 10000 * 1000;
+		        const MAX_VELOCITY_MPS = 500;
+		
+		        // Garantir que a distância projetada nunca seja negativa (usar valor absoluto)
+		        projectedDistanceM = Math.abs(projectedDistanceM);
+		        
+		        // Garantir que a velocidade final nunca seja negativa (usar valor absoluto)
+		        finalVelocityMps = Math.abs(finalVelocityMps);
+		
+		        // Se valores forem muito pequenos, manter como estão (não setar a 0)
+		        if (projectedDistanceM > MAX_DISTANCE_M) {
+		            console.warn(`⚠️ Distância muito alta: ${projectedDistanceM.toFixed(0)} m, limitando para ${MAX_DISTANCE_M} m`);
+		            projectedDistanceM = MAX_DISTANCE_M;
+		        }
+		
+		        if (finalVelocityMps > MAX_VELOCITY_MPS) {
+		            console.warn(`⚠️ Velocidade final muito alta: ${finalVelocityMps.toFixed(1)} m/s, limitando para ${MAX_VELOCITY_MPS} m/s`);
+		            finalVelocityMps = MAX_VELOCITY_MPS;
+		        }
+		
+		        const projectedDistanceKm = projectedDistanceM / 1000;
+		
+		        console.log(`\n📏 DISTÂNCIA FINAL PROJETADA: ${projectedDistanceKm.toFixed(1)} km`);
+		
+		        const bearing = get(lastCalculation).currentDirection;
+		        const destination = calculateDestinationPoint(lastPoint.lat, lastPoint.lon, bearing, projectedDistanceKm);
+		
+		        if (destination.lat < -90 || destination.lat > 90 || destination.lon < -180 || destination.lon > 180) {
+		            console.warn(`⚠️ Coordenadas fora dos limites: Lat=${destination.lat.toFixed(4)}, Lon=${destination.lon.toFixed(4)}`);
+		
+		            if (destination.lat < -90) destination.lat = -90;
+		            if (destination.lat > 90) destination.lat = 90;
+		            if (destination.lon < -180) destination.lon = -180 + 360;
+		            if (destination.lon > 180) destination.lon = 180 - 360;
+		        }
+		
+		        const arrivalTime = new Date(lastPoint.time + get(projectionTime) * 60 * 1000);
+		        const arrivalTimeStr = arrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+		
+		        set(projectedPosition, {
+		            lat: destination.lat,
+		            lon: destination.lon,
+		            distance: projectedDistanceKm,
+		            estimatedArrival: arrivalTimeStr,
+		            useAcceleration,
+		            finalVelocity: finalVelocityMps
+		        });
+		
+		        clearProjection();
+		
+		        const destMarker = L.marker([destination.lat, destination.lon], {
+		            icon: L.divIcon({
+		                html: useAcceleration
+		                    ? '<div style="background: #ff00ff; color: #fff; width: 28px; height: 28px; border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; box-shadow: 0 0 10px #ff00ff;">🎯</div>'
+		                    : '<div style="background: #00ff00; color: #000; width: 28px; height: 28px; border-radius: 50%; border: 3px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; box-shadow: 0 0 10px #00ff00;">🎯</div>',
+		
+		                iconSize: [28, 28],
+		                className: 'destination-marker'
+		            }),
+		
+		            title: `Destino em ${get(projectionTime)} minutos`
+		        }).addTo(map.map);
+		
+		        destMarker.bindTooltip(`Destino em ${get(projectionTime)} min<br>` + 
+		            `Distância: ${projectedDistanceKm.toFixed(1)} km<br>` + 
+		            `Velocidade final: ${finalVelocityMps.toFixed(1)} m/s (${(finalVelocityMps * 3.6).toFixed(1)} km/h)<br>` + 
+		            `Chegada: ${arrivalTimeStr}<br>` + 
+		            `Método: ${useAcceleration ? 'MRUV (com aceleração)' : 'MRU (sem aceleração)'}`, 
+		            { permanent: false, direction: 'top' });
+		        leafletMarkers.push(destMarker);
+		
+		        projectionLine = L.polyline(
+		            [
+		                [lastPoint.lat, lastPoint.lon],
+		                [destination.lat, destination.lon]
+		            ],
+		            {
+		                color: useAcceleration ? '#ff00ff' : '#00ff00',
+		                weight: 3,
+		                opacity: 0.8,
+		                dashArray: useAcceleration ? '10, 10' : null,
+		                lineCap: 'round'
+		            }
+		        ).addTo(map.map);
+		
+		        console.log('\n🎯 RESULTADO DA PROJEÇÃO:');
+		        console.log(('=').repeat(60));
+		        console.log(`   Posição: ${destination.lat.toFixed(4)}°, ${destination.lon.toFixed(4)}°`);
+		        console.log(`   Distância: ${projectedDistanceKm.toFixed(1)} km`);
+		        console.log(`   Velocidade final: ${finalVelocityMps.toFixed(1)} m/s (${(finalVelocityMps * 3.6).toFixed(1)} km/h)`);
+		        console.log(`   Chegada: ${arrivalTimeStr}`);
+		        console.log(`   Método: ${useAcceleration ? 'MRUV (Movimento Uniformemente Variado)' : 'MRU (Movimento Uniforme)'}`);
+		        console.log(('=').repeat(60));
+		    } catch(error) {
+		        console.error('❌ ERRO AO PROJETAR TRAJETÓRIA:', error);
+		        alert('Erro ao projetar trajetória: ' + error.message);
+		    }
 		}
 
 		function clearProjection() {
